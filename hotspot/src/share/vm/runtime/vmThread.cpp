@@ -400,7 +400,7 @@ bool should_gc() {
   // Checking if the difference between max capacity and current capacity is
   // above a threshold.
   if ((MaxUnusedMem > 0) &&
-      (Universe::heap()->max_capacity() - Universe::heap()->capacity() < MaxUnusedMem)) {
+      (Universe::heap()->capacity() - Universe::heap()->used() < MaxUnusedMem)) {
     return false;
   }
 
