@@ -392,15 +392,15 @@ bool should_gc() {
   }
 
   // Checking if the used memory is above a threshold.
-  if ((MaxUsedMem > 0) &&
-      (Universe::heap()->used() < MaxUsedMem)) {
+  if ((MinCommittedMem > 0) &&
+      (Universe::heap()->capacity() < MinCommittedMem)) {
     return false;
   }
 
   // Checking if the difference between max capacity and current capacity is
   // above a threshold.
-  if ((MaxUnusedMem > 0) &&
-      (Universe::heap()->capacity() - Universe::heap()->used() < MaxUnusedMem)) {
+  if ((MaxOverCommittedMem > 0) &&
+      (Universe::heap()->capacity() - Universe::heap()->used() < MaxOverCommittedMem)) {
     return false;
   }
 

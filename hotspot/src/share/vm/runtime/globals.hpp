@@ -3195,12 +3195,12 @@ public:
           "Max CPU usage that should still trigger periodic GCs. Above"     \
           "this value, no periodic GC will not be triggered.")              \
                                                                             \
-  manageable(uintx, MaxUnusedMem, 0,                                        \
-          "Max difference between max capacity and current capacity that"   \
-          "does not trigger a periodic GC.")                                \
+  manageable(uintx, MaxOverCommittedMem, 0,                                 \
+          "Max difference between current heap capacity and the current"    \
+          "heap usage that does not trigger a periodic GC.")                \
                                                                             \
-  manageable(uintx, MaxUsedMem, 0,                                          \
-          "Max used memory that does not trigger a periodic GC.")           \
+  manageable(uintx, MinCommittedMem, 0,                                     \
+          "Min heap size that does not trigger a periodic GC.")             \
                                                                             \
   manageable(size_t, CurrentMaxHeapSize, 0,                                 \
           "Current MaxHeapSize. This value is used when expanding the"      \
