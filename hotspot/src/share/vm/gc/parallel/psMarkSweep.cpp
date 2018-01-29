@@ -282,7 +282,7 @@ bool PSMarkSweep::invoke_no_policy(bool clear_all_softrefs) {
         }
 
         // Calculate optimal free space amounts
-        assert(young_gen->max_size() >
+        assert(young_gen->current_max_size() >
           young_gen->from_space()->capacity_in_bytes() +
           young_gen->to_space()->capacity_in_bytes(),
           "Sizes of space in young gen are out-of-bounds");
@@ -291,8 +291,8 @@ bool PSMarkSweep::invoke_no_policy(bool clear_all_softrefs) {
         size_t eden_live = young_gen->eden_space()->used_in_bytes();
         size_t old_live = old_gen->used_in_bytes();
         size_t cur_eden = young_gen->eden_space()->capacity_in_bytes();
-        size_t max_old_gen_size = old_gen->max_gen_size();
-        size_t max_eden_size = young_gen->max_size() -
+        size_t max_old_gen_size = old_gen->current_max_gen_size();
+        size_t max_eden_size = young_gen->current_max_size() -
           young_gen->from_space()->capacity_in_bytes() -
           young_gen->to_space()->capacity_in_bytes();
 

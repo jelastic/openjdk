@@ -57,6 +57,9 @@ class PSOldGen : public CHeapObj<mtGC> {
   const size_t _min_gen_size;
   const size_t _max_gen_size;
 
+  //dynamic sizing information,in bytes 
+  size_t _current_max_old_size;
+
   // Used when initializing the _name field.
   static inline const char* select_name();
 
@@ -135,6 +138,11 @@ class PSOldGen : public CHeapObj<mtGC> {
   MemRegion reserved() const                { return _reserved; }
   virtual size_t max_gen_size()             { return _max_gen_size; }
   size_t min_gen_size()                     { return _min_gen_size; }
+  
+  //current old max size 
+  size_t current_max_gen_size() { return _current_max_old_size >0 ? _current_max_old_size:_max_gen_size;}
+  void set_current_max_old_size(size_t current_max_old_size) {_current_max_old_size=current_max_old_size;}
+
 
   // Returns limit on the maximum size of the generation.  This
   // is the same as _max_gen_size for PSOldGen but need not be

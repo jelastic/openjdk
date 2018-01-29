@@ -290,13 +290,18 @@ bool PSYoungGen::resize_generation(size_t eden_size, size_t survivor_size) {
   // size and desired survivor sizes are desired goals and may
   // exceed the total generation size.
 
-  assert(min_gen_size() <= orig_size && orig_size <= max_size(), "just checking");
+  if(!AggressiveShrinking)
+  	assert(min_gen_size() <= orig_size && orig_size <= max_size(), "just checking");
 
   // Adjust new generation size
   const size_t eden_plus_survivors =
           align_size_up(eden_size + 2 * survivor_size, alignment);
-  size_t desired_size = MAX2(MIN2(eden_plus_survivors, max_size()),
+  size_t desired_size;
+  if(!AggressiveShrinking)
+  	desired_size = MAX2(MIN2(eden_plus_survivors, max_size()),
                              min_gen_size());
+  else
+	desired_size = MIN2(eden_plus_survivors, max_size());
   assert(desired_size <= max_size(), "just checking");
 
   if (desired_size > orig_size) {
@@ -473,8 +478,11 @@ void PSYoungGen::resize_spaces(size_t requested_eden_size,
 
   ParallelScavengeHeap* heap = ParallelScavengeHeap::heap();
   const size_t alignment = heap->space_alignment();
-  const bool maintain_minimum =
-    (requested_eden_size + 2 * requested_survivor_size) <= min_gen_size();
+  bool maintain_minimum=false;
+  if(!AggressiveShrinking)
+     bool maintain_minimum =
+     	(requested_eden_size + 2 * requested_survivor_size) <= min_gen_size();
+      
 
   bool eden_from_to_order = from_start < to_start;
   // Check whether from space is below to space
@@ -827,7 +835,10 @@ size_t PSYoungGen::available_to_live() {
 size_t PSYoungGen::limit_gen_shrink(size_t bytes) {
   // Allow shrinkage into the current eden but keep eden large enough
   // to maintain the minimum young gen size
-  bytes = MIN3(bytes, available_to_min_gen(), available_to_live());
+  if(!AggressiveShrinking)
+  	bytes = MIN3(bytes, available_to_min_gen(), available_to_live());
+  else
+	bytes = MIN2(bytes, available_to_live());
   return align_size_down(bytes, virtual_space()->alignment());
 }
 

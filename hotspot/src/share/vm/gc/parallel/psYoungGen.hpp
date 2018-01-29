@@ -57,6 +57,10 @@ class PSYoungGen : public CHeapObj<mtGC> {
   const size_t _init_gen_size;
   const size_t _min_gen_size;
   const size_t _max_gen_size;
+  
+  //dynameic size information of current max young size
+  size_t _current_max_young_size;
+
 
   // Performance counters
   PSGenerationCounters*     _gen_counters;
@@ -110,6 +114,11 @@ class PSYoungGen : public CHeapObj<mtGC> {
       return reserved().contains((void *)p);
   }
 
+  // calculate current max young size
+  size_t current_max_size() {return _current_max_young_size>0 ?_current_max_young_size:max_size();}
+ 
+  void set_current_max_young_size(size_t current_max_young_size) {_current_max_young_size=current_max_young_size;}
+
   MutableSpace*   eden_space() const    { return _eden_space; }
   MutableSpace*   from_space() const    { return _from_space; }
   MutableSpace*   to_space() const      { return _to_space; }
@@ -147,6 +156,7 @@ class PSYoungGen : public CHeapObj<mtGC> {
 
   // The max this generation can grow to
   size_t max_size() const { return _reserved.byte_size(); }
+
 
   // The max this generation can grow to if the boundary between
   // the generations are allowed to move.

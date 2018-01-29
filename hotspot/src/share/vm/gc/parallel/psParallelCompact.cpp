@@ -1841,8 +1841,8 @@ bool PSParallelCompact::invoke_no_policy(bool maximum_heap_compaction) {
         size_t eden_live = young_gen->eden_space()->used_in_bytes();
         size_t old_live = old_gen->used_in_bytes();
         size_t cur_eden = young_gen->eden_space()->capacity_in_bytes();
-        size_t max_old_gen_size = old_gen->max_gen_size();
-        size_t max_eden_size = young_gen->max_size() -
+        size_t max_old_gen_size = old_gen->current_max_gen_size();
+        size_t max_eden_size = young_gen->current_max_size() -
           young_gen->from_space()->capacity_in_bytes() -
           young_gen->to_space()->capacity_in_bytes();
 
@@ -1867,9 +1867,11 @@ bool PSParallelCompact::invoke_no_policy(bool maximum_heap_compaction) {
 
         size_policy->decay_supplemental_growth(true /* full gc*/);
 
+	
         heap->resize_old_gen(
           size_policy->calculated_old_free_size_in_bytes());
-
+	
+	log_info(gc, heap)(" h2 new old :%lu,new eden:%lu,new survivor:%lu ",size_policy->calculated_old_free_size_in_bytes(),size_policy->calculated_eden_size_in_bytes(),size_policy->calculated_survivor_size_in_bytes());
         heap->resize_young_gen(size_policy->calculated_eden_size_in_bytes(),
                                size_policy->calculated_survivor_size_in_bytes());
       }

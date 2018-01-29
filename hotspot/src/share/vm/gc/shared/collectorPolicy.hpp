@@ -168,6 +168,7 @@ class GenCollectorPolicy : public CollectorPolicy {
   size_t _initial_old_size;
   size_t _max_old_size;
 
+
   // _gen_alignment and _space_alignment will have the same value most of the
   // time. When using large pages they can differ.
   size_t _gen_alignment;
@@ -212,6 +213,11 @@ class GenCollectorPolicy : public CollectorPolicy {
   size_t min_old_size()       { return _min_old_size; }
   size_t initial_old_size()   { return _initial_old_size; }
   size_t max_old_size()       { return _max_old_size; }
+
+
+  
+  size_t calculate_current_max_young_size(size_t current_max_heap_size);
+  size_t calculate_current_max_old_size(size_t current_max_heap_size);
 
   GenerationSpec* young_gen_spec() const {
     assert(_young_gen_spec != NULL, "_young_gen_spec should have been initialized");

@@ -208,6 +208,9 @@ HeapWord* PSOldGen::allocate(size_t word_size) {
 }
 
 HeapWord* PSOldGen::expand_and_allocate(size_t word_size) {
+  //never try to expand if capacity+word_size > current max old size 
+  if(capacity_in_bytes()+word_size > _current_max_old_size)
+	 return NULL;
   expand(word_size*HeapWordSize);
   if (GCExpandToAllocateDelayMillis > 0) {
     os::sleep(Thread::current(), GCExpandToAllocateDelayMillis, false);
@@ -216,6 +219,9 @@ HeapWord* PSOldGen::expand_and_allocate(size_t word_size) {
 }
 
 HeapWord* PSOldGen::expand_and_cas_allocate(size_t word_size) {
+ //never try to expand if capacity+word_size > current max old size 
+ if(capacity_in_bytes()+word_size > _current_max_old_size)
+         return NULL;
   expand(word_size*HeapWordSize);
   if (GCExpandToAllocateDelayMillis > 0) {
     os::sleep(Thread::current(), GCExpandToAllocateDelayMillis, false);
@@ -341,7 +347,6 @@ void PSOldGen::resize(size_t desired_free_space) {
   }
   // Adjust according to our min and max
   new_size = MAX2(MIN2(new_size, gen_size_limit()), min_gen_size());
-
   assert(gen_size_limit() >= reserved().byte_size(), "max new size problem?");
   new_size = align_size_up(new_size, alignment);
 
@@ -397,7 +402,8 @@ void PSOldGen::post_resize() {
 }
 
 size_t PSOldGen::gen_size_limit() {
-  return _max_gen_size;
+  	return _current_max_old_size >0 ? _current_max_old_size:_max_gen_size;
+  
 }
 
 void PSOldGen::reset_after_change() {
