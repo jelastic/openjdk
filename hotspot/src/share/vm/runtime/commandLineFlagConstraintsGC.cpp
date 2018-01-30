@@ -34,6 +34,8 @@
 #include "runtime/globals_extension.hpp"
 #include "runtime/thread.inline.hpp"
 #include "utilities/defaultStream.hpp"
+#include "gc/shared/collectorPolicy.hpp"
+
 
 #if INCLUDE_ALL_GCS
 #include "gc/cms/concurrentMarkSweepGeneration.inline.hpp"
@@ -661,17 +663,52 @@ Flag::Error MaxHeapSizeConstraintFunc(size_t value, bool verbose) {
 }
 
 Flag::Error CurrentMaxHeapSizeConstraintFunc(size_t value, bool verbose) {
-  if (Universe::heap() == NULL) {
-    return MaxHeapSize >= value ? Flag::SUCCESS : Flag::VIOLATES_CONSTRAINT;
+  if(UseParallelGC){
+	if (Universe::heap() == NULL){ /*&& value <= InitialHeapSize) {
+		if(value==0)
+			return MaxHeapSize >= value ? Flag::SUCCESS : Flag::VIOLATES_CONSTRAINT;
+		else if(value>0 && value >= InitialHeapSize)
+		{
+                	return MaxHeapSize >= value ? Flag::SUCCESS : Flag::VIOLATES_CONSTRAINT;
+		}else{
+			return  Flag::VIOLATES_CONSTRAINT;
+		}*/
+		return MaxHeapSize >= value ? Flag::SUCCESS : Flag::VIOLATES_CONSTRAINT;
+        }	
+	else {
+		ParallelScavengeHeap* heap = (ParallelScavengeHeap*)Universe::heap();
+		GenCollectorPolicy * collect_policy=(GenCollectorPolicy*)heap->collector_policy();
+		size_t new_max_young=collect_policy->calculate_current_max_young_size(value);
+		size_t new_max_old=collect_policy->calculate_current_max_old_size(value);
+		if(heap->young_gen()->capacity_in_bytes()<new_max_young && heap->old_gen()->capacity_in_bytes()<new_max_old){
+			heap->young_gen()->set_current_max_young_size(new_max_young);
+			heap->old_gen()->set_current_max_old_size(new_max_old);
+			return Flag::SUCCESS;
+			
+		}
+		else{
+			Universe::heap()->collect(GCCause::_java_lang_system_gc);
+			if(heap->young_gen()->capacity_in_bytes()<new_max_young&&heap->old_gen()->capacity_in_bytes()<new_max_old){
+                        	heap->young_gen()->set_current_max_young_size(new_max_young);
+                        	heap->old_gen()->set_current_max_old_size(new_max_old);
+                        	return Flag::SUCCESS;
+                	}
+		}
+	}
   }
-  else if ((value > Universe::heap()->capacity()) && (value <= MaxHeapSize)) {
-    return Flag::SUCCESS;
-  }
-  else if (value <= Universe::heap()->capacity()) {
-    Universe::heap()->collect(GCCause::_java_lang_system_gc);
-    if (value > Universe::heap()->capacity()) {
-      return Flag::SUCCESS;
-    }
+  else{
+  	if (Universe::heap() == NULL) {
+    		return MaxHeapSize >= value ? Flag::SUCCESS : Flag::VIOLATES_CONSTRAINT;
+  	}
+ 	else if ((value > Universe::heap()->capacity()) && (value <= MaxHeapSize)) {
+    		return Flag::SUCCESS;
+  	}
+  	else if (value <= Universe::heap()->capacity()) {
+    		Universe::heap()->collect(GCCause::_java_lang_system_gc);
+    		if (value > Universe::heap()->capacity()) {
+      		return Flag::SUCCESS;
+    		}
+	}
   }
   CommandLineError::print(verbose,
                           "Could not set CurrentMaxHeapSize. New CurrentMaxHeapSize (" UINTX_FORMAT "), MaxHeapSize (" UINTX_FORMAT ")\n",

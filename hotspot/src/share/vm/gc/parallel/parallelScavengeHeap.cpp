@@ -150,15 +150,26 @@ bool ParallelScavengeHeap::is_maximal_no_gc() const {
   return old_gen()->is_maximal_no_gc() && young_gen()->is_maximal_no_gc();
 }
 
+size_t ParallelScavengeHeap::max_current_capacity() const {
+  if (CurrentMaxHeapSize > 0) {
+     return CurrentMaxHeapSize;
+   } else {
+     return max_capacity();
+  }
+}
+
 
 size_t ParallelScavengeHeap::max_capacity() const {
   size_t estimated = reserved_region().byte_size();
   if (UseAdaptiveSizePolicy) {
-    estimated -= _size_policy->max_survivor_size(young_gen()->max_size());
+    estimated -= _size_policy->max_survivor_size(young_gen()->current_max_size());
   } else {
     estimated -= young_gen()->to_space()->capacity_in_bytes();
   }
-  return MAX2(estimated, capacity());
+  if(CurrentMaxHeapSize>0)
+  	return MAX2(estimated, MIN2(capacity(),CurrentMaxHeapSize));
+  else
+	return MAX2(estimated,capacity());
 }
 
 bool ParallelScavengeHeap::is_in(const void* p) const {

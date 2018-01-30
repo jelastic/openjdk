@@ -105,7 +105,20 @@ AdjoiningGenerations::AdjoiningGenerations(ReservedSpace old_young_rs,
                             min_low_byte_size,
                             max_low_byte_size,
                             "old", 1);
-
+    //make sure CurrentMaxHeapSize > Init_heap_size when initializing 
+    if(CurrentMaxHeapSize >0 && CurrentMaxHeapSize >= InitialHeapSize)
+    {
+	size_t current_max_young=policy->calculate_current_max_young_size(CurrentMaxHeapSize);
+	size_t current_max_old= policy->calculate_current_max_old_size(CurrentMaxHeapSize);
+	_young_gen->set_current_max_young_size(current_max_young);
+	_old_gen->set_current_max_old_size(current_max_old);
+	log_info(gc, heap)("Initlized current max size: CurrentMaxHeapSize:%lu,InitialHeapSize:%lu,current_max_young:%lu,current_max_old:%lu",CurrentMaxHeapSize,InitialHeapSize,current_max_young,current_max_old);	
+    }
+    else
+    {
+	_young_gen->set_current_max_young_size(0);
+	_old_gen->set_current_max_old_size(0);
+    }
     // The virtual spaces are created by the initialization of the gens.
     _young_gen->initialize(young_rs, alignment);
     assert(young_gen()->gen_size_limit() == young_rs.size(),

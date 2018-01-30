@@ -219,6 +219,25 @@ void GenCollectorPolicy::initialize_size_policy(size_t init_eden_size,
                                         GCTimeRatio);
 }
 
+size_t GenCollectorPolicy::calculate_current_max_young_size(size_t current_max_heap_size){
+	size_t aligned_current_max_heap_size = align_size_up(current_max_heap_size, _heap_alignment);
+	size_t new_max_young_size=scale_by_NewRatio_aligned(aligned_current_max_heap_size);
+	if(new_max_young_size<_gen_alignment)
+		return 0;
+	return MIN3(new_max_young_size,MaxNewSize,_max_young_size);
+}
+
+size_t GenCollectorPolicy::calculate_current_max_old_size(size_t current_max_heap_size){
+	size_t new_young_max_size=calculate_current_max_young_size(current_max_heap_size);
+	size_t new_old_max_size=align_size_up(current_max_heap_size, _heap_alignment)-new_young_max_size;
+	if(new_old_max_size>_max_old_size)
+		return 0;
+	else
+		return new_old_max_size;
+}
+
+
+
 size_t GenCollectorPolicy::young_gen_size_lower_bound() {
   // The young generation must be aligned and have room for eden + two survivors
   return align_size_up(3 * _space_alignment, _gen_alignment);

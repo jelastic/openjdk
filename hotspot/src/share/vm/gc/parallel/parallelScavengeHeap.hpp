@@ -99,6 +99,8 @@ class ParallelScavengeHeap : public CollectedHeap {
 
   virtual PSAdaptiveSizePolicy* size_policy() { return _size_policy; }
 
+  virtual size_t max_current_capacity() const;
+
   static PSGCAdaptivePolicyCounters* gc_policy_counters() { return _gc_policy_counters; }
 
   static ParallelScavengeHeap* heap();

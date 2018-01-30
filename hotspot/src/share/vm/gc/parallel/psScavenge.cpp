@@ -490,7 +490,7 @@ bool PSScavenge::invoke_no_policy() {
           counters->update_survivor_overflowed(_survivor_overflow);
         }
 
-        size_t max_young_size = young_gen->max_size();
+        size_t max_young_size = young_gen->current_max_size();//young_gen->max_size();
 
         // Deciding a free ratio in the young generation is tricky, so if
         // MinHeapFreeRatio or MaxHeapFreeRatio are in use (implicating
@@ -498,9 +498,10 @@ bool PSScavenge::invoke_no_policy() {
         // should then limit our young generation size using NewRatio to have it
         // follow the old generation size.
         if (MinHeapFreeRatio != 0 || MaxHeapFreeRatio != 100) {
-          max_young_size = MIN2(old_gen->capacity_in_bytes() / NewRatio, young_gen->max_size());
+          max_young_size = MIN2(old_gen->capacity_in_bytes() / NewRatio, young_gen->current_max_size());
         }
-
+	
+	//for limiting the new calculated survivor size not to exceed survivor_limit of current max young size;
         size_t survivor_limit =
           size_policy->max_survivor_size(max_young_size);
         _tenuring_threshold =
@@ -525,7 +526,7 @@ bool PSScavenge::invoke_no_policy() {
         if (UseAdaptiveGenerationSizePolicyAtMinorCollection &&
             (AdaptiveSizePolicy::should_update_eden_stats(gc_cause))) {
           // Calculate optimal free space amounts
-          assert(young_gen->max_size() >
+          assert(young_gen->current_max_size() >
             young_gen->from_space()->capacity_in_bytes() +
             young_gen->to_space()->capacity_in_bytes(),
             "Sizes of space in young gen are out-of-bounds");
@@ -533,7 +534,8 @@ bool PSScavenge::invoke_no_policy() {
           size_t young_live = young_gen->used_in_bytes();
           size_t eden_live = young_gen->eden_space()->used_in_bytes();
           size_t cur_eden = young_gen->eden_space()->capacity_in_bytes();
-          size_t max_old_gen_size = old_gen->max_gen_size();
+          size_t max_old_gen_size = old_gen->current_max_gen_size();
+	  // now the max_young_size is the current max_young_size;
           size_t max_eden_size = max_young_size -
             young_gen->from_space()->capacity_in_bytes() -
             young_gen->to_space()->capacity_in_bytes();
@@ -565,7 +567,7 @@ bool PSScavenge::invoke_no_policy() {
         // Resizing the old gen at young collections can cause increases
         // that don't feed back to the generation sizing policy until
         // a full collection.  Don't resize the old gen here.
-
+        log_info(gc, heap)(" h2 new eden:%lu,new survivor:%lu ",size_policy->calculated_eden_size_in_bytes(),size_policy->calculated_survivor_size_in_bytes()); 
         heap->resize_young_gen(size_policy->calculated_eden_size_in_bytes(),
                         size_policy->calculated_survivor_size_in_bytes());
 
