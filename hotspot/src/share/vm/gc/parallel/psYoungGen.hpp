@@ -37,6 +37,9 @@ class PSYoungGen : public CHeapObj<mtGC> {
   friend class VMStructs;
   friend class ParallelScavengeHeap;
   friend class AdjoiningGenerations;
+ private:
+  size_t     find_eden_used;
+  size_t     find_survivor_used;
 
  protected:
   MemRegion       _reserved;
@@ -118,6 +121,12 @@ class PSYoungGen : public CHeapObj<mtGC> {
   size_t current_max_size() {return _current_max_young_size>0 ?_current_max_young_size:max_size();}
  
   void set_current_max_young_size(size_t current_max_young_size) {_current_max_young_size=current_max_young_size;}
+
+  void set_find_eden_used(size_t used){find_eden_used=used;}
+  void set_find_survivor_used(size_t used){find_survivor_used=used;}
+
+  size_t get_find_eden_used(){return find_eden_used;}
+  size_t get_find_survivor_used(){return find_survivor_used;}
 
   MutableSpace*   eden_space() const    { return _eden_space; }
   MutableSpace*   from_space() const    { return _from_space; }

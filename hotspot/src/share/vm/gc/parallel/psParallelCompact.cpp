@@ -1867,13 +1867,29 @@ bool PSParallelCompact::invoke_no_policy(bool maximum_heap_compaction) {
 
         size_policy->decay_supplemental_growth(true /* full gc*/);
 
+	if(heap->get_force_resize())
+	{
+          //heap->resize_old_gen(MIN2(size_policy->calculated_old_free_size_in_bytes(),MaxOverCommittedMem));
+	  heap->resize_old_gen(0);
+	  log_info(gc, heap)("\n hh0 young capacity :%lu,young used:%lu,old capacity:%lu,old used:%lu \n",young_gen->capacity_in_bytes(),young_gen->used_in_bytes(),old_gen->capacity_in_bytes(),old_gen->used_in_bytes());
+	}
+	else	
+            heap->resize_old_gen(size_policy->calculated_old_free_size_in_bytes());
 	
-        heap->resize_old_gen(
-          size_policy->calculated_old_free_size_in_bytes());
-	
-	log_info(gc, heap)(" h2 new old :%lu,new eden:%lu,new survivor:%lu ",size_policy->calculated_old_free_size_in_bytes(),size_policy->calculated_eden_size_in_bytes(),size_policy->calculated_survivor_size_in_bytes());
-        heap->resize_young_gen(size_policy->calculated_eden_size_in_bytes(),
-                               size_policy->calculated_survivor_size_in_bytes());
+	/*log_info(gc, heap)(" h2 new old :%lu,new eden:%lu,new survivor:%lu ",size_policy->calculated_old_free_size_in_bytes(),size_policy->calculated_eden_size_in_bytes(),size_policy->calculated_survivor_size_in_bytes());
+*/      if(heap->get_force_resize())
+	{
+		 if(young_gen->get_find_eden_used()>0&&young_gen->get_find_survivor_used()>0)
+             {	
+		heap->resize_young_gen(young_gen->get_find_eden_used(),young_gen->get_find_survivor_used());	
+		log_info(gc, heap)("\n hh1 young capacity :%lu,young used:%lu,old capacity:%lu,old used:%lu \n",young_gen->capacity_in_bytes(),young_gen->used_in_bytes(),old_gen->capacity_in_bytes(),old_gen->used_in_bytes());
+	    }
+		else
+		  heap->resize_young_gen(size_policy->calculated_eden_size_in_bytes(),size_policy->calculated_survivor_size_in_bytes());
+	}
+	else 
+		heap->resize_young_gen(size_policy->calculated_eden_size_in_bytes(),size_policy->calculated_survivor_size_in_bytes());
+	heap->set_force_resize(false);
       }
 
       log_debug(gc, ergo)("AdaptiveSizeStop: collection: %d ", heap->total_collections());
