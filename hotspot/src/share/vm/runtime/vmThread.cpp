@@ -391,15 +391,13 @@ bool should_gc() {
       (os::loadavg(la, max_nelem) == -1 || la[0] > MaxLoadGC)) {
     return false;
   }
-  log_info(gc, heap)("x1");
   // Checking if the used memory is above a threshold.
   if ((MinCommittedMem > 0) &&
       (Universe::heap()->capacity() < MinCommittedMem)) {
     return false;
   }
-  log_info(gc, heap)("x2");
   
-  log_info(gc, heap)("\n zyn capacity:%lu,used:%lu,maxover:%lu,GCFrequency:%lu \n",Universe::heap()->capacity(),Universe::heap()->used(),MaxOverCommittedMem,GCFrequency); 
+  log_info(gc, heap)("hh-vmthread capacity:%lu,used:%lu,maxover:%lu,GCFrequency:%lu \n",Universe::heap()->capacity(),Universe::heap()->used(),MaxOverCommittedMem,GCFrequency); 
   // Checking if the difference between max capacity and current capacity is
   // above a threshold.
   if ((MaxOverCommittedMem > 0) &&
@@ -411,11 +409,11 @@ bool should_gc() {
   	if(UseParallelGC)
 	{
 		ParallelScavengeHeap* heap = ParallelScavengeHeap::heap(); 
-  		if(heap->young_gen()->eden_space()->used_in_bytes()<=0||heap->young_gen()->from_space()->used_in_bytes()<=0)
+  		if(heap->young_gen()->eden_space()->used_in_bytes()<=0)
     		return false; 
   		heap->young_gen()->set_find_eden_used(heap->young_gen()->eden_space()->used_in_bytes());
   		heap->young_gen()->set_find_survivor_used(heap->young_gen()->from_space()->used_in_bytes());
-	  	log_info(gc, heap)("x3 eden used:%lu,survivor used:%lu.",heap->young_gen()->eden_space()->used_in_bytes(),heap->young_gen()->from_space()->used_in_bytes());
+	  	log_info(gc, heap)("hh-vmthread eden used:%lu,survivor used:%lu.",heap->young_gen()->eden_space()->used_in_bytes(),heap->young_gen()->from_space()->used_in_bytes());
   log_info(gc, heap)("x3,os::elapsedTime:%f,Universe::heap->last_full_collection:%f,time:%f",os::elapsedTime(), Universe::heap()->last_full_collection(),os::elapsedTime() -  Universe::heap()->last_full_collection());
   	}
   }

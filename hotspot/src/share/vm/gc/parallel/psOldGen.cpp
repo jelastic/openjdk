@@ -327,9 +327,6 @@ void PSOldGen::shrink(size_t bytes) {
   size_t size = align_size_down(bytes, virtual_space()->alignment());
   if (size > 0) {
     assert_lock_strong(ExpandHeap_lock);
-     ParallelScavengeHeap* heap = ParallelScavengeHeap::heap();
-     //if(heap->get_force_resize())
-        log_info(gc, heap)("hh0 5 shrink bytes:%lu",bytes);
     virtual_space()->shrink_by(bytes);
     post_resize();
     size_t new_mem_size = virtual_space()->committed_size();
@@ -340,9 +337,6 @@ void PSOldGen::shrink(size_t bytes) {
 }
 
 void PSOldGen::resize(size_t desired_free_space) {
-  ParallelScavengeHeap* heap = ParallelScavengeHeap::heap();
-  //if(heap->get_force_resize())
-  log_info(gc, heap)("hh0 1 desire_size:%lu",desired_free_space);
   const size_t alignment = virtual_space()->alignment();
   const size_t size_before = virtual_space()->committed_size();
   size_t new_size = used_in_bytes() + desired_free_space;
@@ -350,12 +344,8 @@ void PSOldGen::resize(size_t desired_free_space) {
     // Overflowed the addition.
     new_size = gen_size_limit();
   }
-  if(heap->get_force_resize())
-	log_info(gc, heap)("hh0 1 new_size:%lu",new_size);
   // Adjust according to our min and max
   new_size = MAX2(MIN2(new_size, gen_size_limit()), min_gen_size());
-  //if(heap->get_force_resize())
-  log_info(gc, heap)("hh0 2 new_size:%lu",new_size);
   assert(gen_size_limit() >= reserved().byte_size(), "max new size problem?");
   new_size = align_size_up(new_size, alignment);
 
@@ -377,8 +367,6 @@ void PSOldGen::resize(size_t desired_free_space) {
     expand(change_bytes);
   } else {
     size_t change_bytes = current_size - new_size;
-    //if(heap->get_force_resize())
-        log_info(gc, heap)("hh0 4 change_bytes:%lu",change_bytes);
     // shrink doesn't grab this lock, expand does. Is that right?
     MutexLocker x(ExpandHeap_lock);
     shrink(change_bytes);

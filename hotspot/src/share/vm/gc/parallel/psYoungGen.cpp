@@ -327,11 +327,12 @@ bool PSYoungGen::resize_generation(size_t eden_size, size_t survivor_size) {
     ParallelScavengeHeap* heap = ParallelScavengeHeap::heap();
     size_t old_desired_change=desired_change;
     desired_change = limit_gen_shrink(desired_change);
-    if(heap->get_force_resize())
+    log_info(gc, heap)("hh-young old_desire_Change:%lu,new_desire_Change:%lu,available_to_min_gen:%lu,available_to_live:%lu",old_desired_change,desired_change,available_to_min_gen(), available_to_live());
+    /*if(heap->get_force_resize())
     {
 	if(old_desired_change!=desired_change)
 		return false;
-    }
+    }*/
     if (desired_change > 0) {
       virtual_space()->shrink_by(desired_change);
       reset_survivors_after_shrink();
