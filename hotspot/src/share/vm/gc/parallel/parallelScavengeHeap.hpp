@@ -50,6 +50,9 @@ class ParallelScavengeHeap : public CollectedHeap {
   static PSYoungGen* _young_gen;
   static PSOldGen*   _old_gen;
 
+  bool force_resize;
+
+
   // Sizing policy for entire heap
   static PSAdaptiveSizePolicy*       _size_policy;
   static PSGCAdaptivePolicyCounters* _gc_policy_counters;
@@ -100,6 +103,9 @@ class ParallelScavengeHeap : public CollectedHeap {
   virtual PSAdaptiveSizePolicy* size_policy() { return _size_policy; }
 
   virtual size_t max_current_capacity() const;
+
+  bool get_force_resize() {return force_resize;}
+  void set_force_resize(bool if_force_resize) {force_resize=if_force_resize;}
 
   static PSGCAdaptivePolicyCounters* gc_policy_counters() { return _gc_policy_counters; }
 

@@ -329,7 +329,6 @@ void PSOldGen::shrink(size_t bytes) {
     assert_lock_strong(ExpandHeap_lock);
     virtual_space()->shrink_by(bytes);
     post_resize();
-
     size_t new_mem_size = virtual_space()->committed_size();
     size_t old_mem_size = new_mem_size + bytes;
     log_debug(gc)("Shrinking %s from " SIZE_FORMAT "K by " SIZE_FORMAT "K to " SIZE_FORMAT "K",

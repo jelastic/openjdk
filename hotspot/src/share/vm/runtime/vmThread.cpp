@@ -391,27 +391,39 @@ bool should_gc() {
       (os::loadavg(la, max_nelem) == -1 || la[0] > MaxLoadGC)) {
     return false;
   }
-
   // Checking if the used memory is above a threshold.
   if ((MinCommittedMem > 0) &&
       (Universe::heap()->capacity() < MinCommittedMem)) {
     return false;
   }
-
+  
+  log_info(gc, heap)("hh-vmthread capacity:%lu,used:%lu,maxover:%lu,GCFrequency:%lu \n",Universe::heap()->capacity(),Universe::heap()->used(),MaxOverCommittedMem,GCFrequency); 
   // Checking if the difference between max capacity and current capacity is
   // above a threshold.
   if ((MaxOverCommittedMem > 0) &&
       (Universe::heap()->capacity() - Universe::heap()->used() < MaxOverCommittedMem)) {
     return false;
   }
-
+  if(Universe::heap()!=NULL)
+  {
+  	if(UseParallelGC)
+	{
+		ParallelScavengeHeap* heap = ParallelScavengeHeap::heap(); 
+  		if(heap->young_gen()->eden_space()->used_in_bytes()<=0)
+    		return false; 
+  		heap->young_gen()->set_find_eden_used(heap->young_gen()->eden_space()->used_in_bytes());
+  		heap->young_gen()->set_find_survivor_used(heap->young_gen()->from_space()->used_in_bytes());
+	  	log_info(gc, heap)("hh-vmthread eden used:%lu,survivor used:%lu.",heap->young_gen()->eden_space()->used_in_bytes(),heap->young_gen()->from_space()->used_in_bytes());
+  log_info(gc, heap)("x3,os::elapsedTime:%f,Universe::heap->last_full_collection:%f,time:%f",os::elapsedTime(), Universe::heap()->last_full_collection(),os::elapsedTime() -  Universe::heap()->last_full_collection());
+  	}
+  }
   // Checking if enough time has passed
   if ((GCFrequency > 0 ) &&
       (os::elapsedTime() -  Universe::heap()->last_full_collection() > GCFrequency)) {
-    log_debug(gc, ergo, heap)("Should run gc! Elapsed time = %f; Last Full GC = %f; GCFrequency = "UINTX_FORMAT, os::elapsedTime(), Universe::heap()->last_full_collection(), GCFrequency);
+    log_info(gc, heap)("Should run gc! Elapsed time = %f; Last Full GC = %f; GCFrequency = "UINTX_FORMAT, os::elapsedTime(), Universe::heap()->last_full_collection(), GCFrequency);
     return true;
   }
-
+  log_info(gc, heap)("x4");
   return false;
 }
 
@@ -471,6 +483,8 @@ void VMThread::loop() {
         if (should_gc()) {
           if(UseParallelGC)
 	  {
+	 	ParallelScavengeHeap* heap = ParallelScavengeHeap::heap();
+		heap->set_force_resize(true);
 		VM_ParallelGCSystemGC op(Universe::heap()->total_collections(), Universe::heap()->total_full_collections(), GCCause::_java_lang_system_gc);
                 execute(&op);
 	  }

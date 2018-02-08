@@ -111,6 +111,7 @@ jint ParallelScavengeHeap::initialize() {
   // Set up the GCTaskManager
   _gc_task_manager = GCTaskManager::create(ParallelGCThreads);
 
+  force_resize=false;
   if (UseParallelOldGC && !PSParallelCompact::initialize()) {
     return JNI_ENOMEM;
   }
@@ -643,6 +644,7 @@ void ParallelScavengeHeap::resize_young_gen(size_t eden_size,
 // the reserved space for the young and old generations
 // may be changed to accommodate the desired resize.
 void ParallelScavengeHeap::resize_old_gen(size_t desired_free_space) {
+  log_info(gc, heap)("hh-old inside resize_old_gen desire_free_size in resize_old:%lu ",desired_free_space);
   if (UseAdaptiveGCBoundary) {
     if (size_policy()->bytes_absorbed_from_eden() != 0) {
       size_policy()->reset_bytes_absorbed_from_eden();
@@ -650,7 +652,6 @@ void ParallelScavengeHeap::resize_old_gen(size_t desired_free_space) {
     }
     gens()->adjust_boundary_for_old_gen_needs(desired_free_space);
   }
-
   // Delegate the resize to the generation.
   _old_gen->resize(desired_free_space);
 }

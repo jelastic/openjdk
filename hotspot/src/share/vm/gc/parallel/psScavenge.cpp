@@ -567,9 +567,19 @@ bool PSScavenge::invoke_no_policy() {
         // Resizing the old gen at young collections can cause increases
         // that don't feed back to the generation sizing policy until
         // a full collection.  Don't resize the old gen here.
-        log_info(gc, heap)(" h2 new eden:%lu,new survivor:%lu ",size_policy->calculated_eden_size_in_bytes(),size_policy->calculated_survivor_size_in_bytes()); 
-        heap->resize_young_gen(size_policy->calculated_eden_size_in_bytes(),
-                        size_policy->calculated_survivor_size_in_bytes());
+        if(heap->get_force_resize())
+	{
+	    if(young_gen->get_find_eden_used()>0)
+	     {
+             log_info(gc, heap)("hh-young before resize capacity:%lu",young_gen->capacity_in_bytes());
+		     heap->resize_young_gen(young_gen->get_find_eden_used(),size_policy->calculated_survivor_size_in_bytes());
+	         log_info(gc, heap)("hh-young after resize capacity :%lu,young used:%lu",young_gen->capacity_in_bytes(),young_gen->used_in_bytes());
+	     }
+	     else
+		     heap->resize_young_gen(size_policy->calculated_eden_size_in_bytes(),size_policy->calculated_survivor_size_in_bytes());
+	}	    
+	else
+	    heap->resize_young_gen(size_policy->calculated_eden_size_in_bytes(),size_policy->calculated_survivor_size_in_bytes());
 
         log_debug(gc, ergo)("AdaptiveSizeStop: collection: %d ", heap->total_collections());
       }
