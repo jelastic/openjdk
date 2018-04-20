@@ -5,7 +5,8 @@ CmdTest.class: CmdTest.java
 
 run-release-cmd: CmdTest.class
 	./launcher/java CmdTest < CmdTest.input1
-	./launcher/java CmdTest < CmdTest.input2
+	#./launcher/java CmdTest < CmdTest.input2
+	#./launcher/java CmdTest < CmdTest.input3
 
 run-gdb-cmd: CmdTest.class
 	./launcher/java-gdb CmdTest < CmdTest.input1

@@ -8,19 +8,33 @@ JVM_OPTS="$JVM_OPTS -Xlog:gc*=debug:file=jvm.log:uptime,level:filecount=1"
 
 JVM_OPTS="$JVM_OPTS -XX:+UseG1GC"
 JVM_OPTS="$JVM_OPTS -Xms1g"
-JVM_OPTS="$JVM_OPTS -Xmx8g"
 JVM_OPTS="$JVM_OPTS -XX:NewSize=256m"
 JVM_OPTS="$JVM_OPTS -XX:MaxNewSize=256m"
 
+# Using Xms does not change results.
+#JVM_OPTS="$JVM_OPTS -Xms8g"
+
+#JVM_OPTS="$JVM_OPTS -Xmx1g"
+#JVM_OPTS="$JVM_OPTS -Xmx2g"    # 1119M
+#JVM_OPTS="$JVM_OPTS -Xmx4g"    # 1133M
+#JVM_OPTS="$JVM_OPTS -Xmx8g"    # 1219M
+#JVM_OPTS="$JVM_OPTS -Xmx16g"   # 1366M
+#JVM_OPTS="$JVM_OPTS -Xmx32g"   # 1368M
+#JVM_OPTS="$JVM_OPTS -Xmx64g"   # 1373M
+#JVM_OPTS="$JVM_OPTS -Xmx128g"  # 1391M
+#JVM_OPTS="$JVM_OPTS -Xmx256g"  # 1428M
+#JVM_OPTS="$JVM_OPTS -Xmx512g"  # 1501M
+JVM_OPTS="$JVM_OPTS -Xmx1024g" # 1648M
+
 # Jelastic flags that control memory usage.
 JVM_OPTS="$JVM_OPTS -XX:+AggressiveShrinking"
-JVM_OPTS="$JVM_OPTS -XX:CurrentMaxHeapSize=4g"
+#JVM_OPTS="$JVM_OPTS -XX:CurrentMaxHeapSize=4g"
 #JVM_OPTS="$JVM_OPTS -XX:+ReleaseShrinkedMemory"
 
 # Jelastic flags to manage how frequently a GC sould run.
-JVM_OPTS="$JVM_OPTS -XX:GCFrequency=60"
+JVM_OPTS="$JVM_OPTS -XX:GCFrequency=5"
+JVM_OPTS="$JVM_OPTS -XX:MaxOverCommittedMem=100m"
 #JVM_OPTS="$JVM_OPTS -XX:MaxLoadGC=5"
-#JVM_OPTS="$JVM_OPTS -XX:MaxUsedMem=10"
 #JVM_OPTS="$JVM_OPTS -XX:MaxUnsedMem=10"
 
 # Other useful flags.

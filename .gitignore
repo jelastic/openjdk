@@ -1,3 +1,7 @@
+cscope.*
+tags
+*.class
+editinfo
 build/
 dist/
 nbproject/private/
