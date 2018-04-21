@@ -674,7 +674,7 @@ Flag::Error CurrentMaxHeapSizeConstraintFunc(size_t value, bool verbose) {
 			return  Flag::VIOLATES_CONSTRAINT;
 		}*/
 		return MaxHeapSize >= value ? Flag::SUCCESS : Flag::VIOLATES_CONSTRAINT;
-        }	
+        }
 	else {
 		ParallelScavengeHeap* heap = (ParallelScavengeHeap*)Universe::heap();
 		GenCollectorPolicy * collect_policy=(GenCollectorPolicy*)heap->collector_policy();
@@ -684,7 +684,7 @@ Flag::Error CurrentMaxHeapSizeConstraintFunc(size_t value, bool verbose) {
 			heap->young_gen()->set_current_max_young_size(new_max_young);
 			heap->old_gen()->set_current_max_old_size(new_max_old);
 			return Flag::SUCCESS;
-			
+
 		}
 		else{
 			Universe::heap()->collect(GCCause::_java_lang_system_gc);
@@ -697,22 +697,26 @@ Flag::Error CurrentMaxHeapSizeConstraintFunc(size_t value, bool verbose) {
 	}
   }
   else{
-  	if (Universe::heap() == NULL) {
-    		return MaxHeapSize >= value ? Flag::SUCCESS : Flag::VIOLATES_CONSTRAINT;
-  	}
- 	else if ((value > Universe::heap()->capacity()) && (value <= MaxHeapSize)) {
-    		return Flag::SUCCESS;
-  	}
-  	else if (value <= Universe::heap()->capacity()) {
-    		Universe::heap()->collect(GCCause::_java_lang_system_gc);
-    		if (value > Universe::heap()->capacity()) {
-      		return Flag::SUCCESS;
-    		}
-	}
+    if (CurrentMaxHeapSize == 0) {
+      return Flag::SUCCESS;
+    }
+    if (value > MaxHeapSize) {
+      CommandLineError::print(verbose, "CurrentMaxHeapSize cannot be higher than MaxHeapSize\n");
+      return Flag::VIOLATES_CONSTRAINT;
+    }
+  	if (Universe::heap() == NULL && (value < InitialHeapSize)) {
+      CommandLineError::print(verbose, "CurrentMaxHeapSize cannot be lower than InitialHeapSize\n");
+      return Flag::VIOLATES_CONSTRAINT;
+    }
+  	if (Universe::heap() != NULL && (value < Universe::heap()->capacity())) {
+   	  Universe::heap()->collect(GCCause::_java_lang_system_gc);
+    	if (value < Universe::heap()->capacity()) {
+        CommandLineError::print(verbose, "CurrentMaxHeapSize cannot be lower than current heap size\n");
+        return Flag::VIOLATES_CONSTRAINT;
+      }
+	  }
+    return Flag::SUCCESS;
   }
-  CommandLineError::print(verbose,
-                          "Could not set CurrentMaxHeapSize. New CurrentMaxHeapSize (" UINTX_FORMAT "), MaxHeapSize (" UINTX_FORMAT ")\n",
-                          value, MaxHeapSize);
   return Flag::VIOLATES_CONSTRAINT;
 }
 
