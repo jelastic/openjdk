@@ -3187,6 +3187,21 @@ public:
           " to the target size at the next full GC rather than requiring"   \
           " smaller steps during multiple full GCs.")                       \
                                                                             \
+  manageable(uintx, GCFrequency, 0,                                         \
+          "Number of seconds to wait before triggering a full gc. Use zero" \
+          "to disable periodic enforced gc cycles.")                        \
+                                                                            \
+  manageable(uintx, MaxLoadGC, 0,                                           \
+          "Max CPU usage that should still trigger periodic GCs. Above"     \
+          "this value, no periodic GC will not be triggered.")              \
+                                                                            \
+  manageable(uintx, MaxOverCommittedMem, 0,                                 \
+          "Max difference between current heap capacity and the current"    \
+          "heap usage that does not trigger a periodic GC.")                \
+                                                                            \
+  manageable(uintx, MinCommittedMem, 0,                                     \
+          "Min heap size that does not trigger a periodic GC.")             \
+                                                                            \
   product(intx, SoftRefLRUPolicyMSPerMB, 1000,                              \
           "Number of milliseconds per MB of free space in the heap")        \
           range(0, max_intx)                                                \
