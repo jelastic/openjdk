@@ -35,6 +35,7 @@
 #include "runtime/thread.inline.hpp"
 #include "utilities/defaultStream.hpp"
 
+
 #if INCLUDE_ALL_GCS
 #include "gc/cms/concurrentMarkSweepGeneration.inline.hpp"
 #include "gc/g1/g1_globals.hpp"
@@ -658,6 +659,28 @@ Flag::Error MaxHeapSizeConstraintFunc(size_t value, bool verbose) {
     status = CheckMaxHeapSizeAndSoftRefLRUPolicyMSPerMB(value, SoftRefLRUPolicyMSPerMB, verbose);
   }
   return status;
+}
+
+Flag::Error CurrentMaxHeapSizeConstraintFunc(size_t value, bool verbose) {
+  if (CurrentMaxHeapSize == 0) {
+    return Flag::SUCCESS;
+  }
+  if (value > MaxHeapSize) {
+    CommandLineError::print(verbose, "CurrentMaxHeapSize cannot be higher than MaxHeapSize\n");
+    return Flag::VIOLATES_CONSTRAINT;
+  }
+  if (Universe::heap() == NULL && (value < InitialHeapSize)) {
+    CommandLineError::print(verbose, "CurrentMaxHeapSize cannot be lower than InitialHeapSize\n");
+    return Flag::VIOLATES_CONSTRAINT;
+  }
+  if (Universe::heap() != NULL && (value < Universe::heap()->capacity())) {
+      Universe::heap()->collect(GCCause::_java_lang_system_gc);
+    if (value < Universe::heap()->capacity()) {
+      CommandLineError::print(verbose, "CurrentMaxHeapSize cannot be lower than current heap size\n");
+      return Flag::VIOLATES_CONSTRAINT;
+    }
+	}
+  return Flag::SUCCESS;
 }
 
 Flag::Error HeapBaseMinAddressConstraintFunc(size_t value, bool verbose) {

@@ -3187,6 +3187,11 @@ public:
           " to the target size at the next full GC rather than requiring"   \
           " smaller steps during multiple full GCs.")                       \
                                                                             \
+  manageable(size_t, CurrentMaxHeapSize, 0,                                 \
+          "Current MaxHeapSize. This value is used when expanding the"      \
+          "heap, i.e., it limits how much the heap can expand.")            \
+          constraint(CurrentMaxHeapSizeConstraintFunc,AfterErgo)            \
+                                                                            \
   product(intx, SoftRefLRUPolicyMSPerMB, 1000,                              \
           "Number of milliseconds per MB of free space in the heap")        \
           range(0, max_intx)                                                \
